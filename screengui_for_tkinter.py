@@ -7,25 +7,30 @@ from data_types import Vector2, UDim2, Color3
 # -- BASE -- #
 class _Event:
     connected = None
-    def __init__(self, tk, event_string, first_fire=None):
+    def __init__(self, tk, event_string="", first_fire=None):
         self.tk = tk
         self.event_string = event_string
         self.first = first_fire
 
-        self.tk.bind(event_string, self._fired)
+        if event_string != "":
+            self.tk.bind(event_string, self._fired)
     def Connect(self, func):
         self.connected = func
-    def _fired(self, event):
+    def _fired(self, event=None):
         success = (self.connected is not None)
         if self.first is not None:
             success = (self.first(event) and success)
 
-        if success:
+        if not success:
+            return
+        if event is None:
+            self.connected()
+        else:
             self.connected(event)
 
 class _GuiBase:
     __frozen = True
-    def __init__(self, name: str, parent = None, attributes=None, screen=False, tk = None):
+    def __init__(self, name: str = "GuiBase", parent = None, attributes=None, screen=False, tk = None):
         if attributes is None:
             attributes = {}
         self.Name: str = name
@@ -41,7 +46,8 @@ class _GuiBase:
     def _set_parent(self, parent):
         self.tk.destroy()
         everything = self.__dict__
-        self.__init__(self.Name, parent=parent, attributes=everything)
+        self.__frozen = True
+        self.__init__(parent=parent,attributes=everything)
     def FindFirstChild(self, name):
         return [child for child in self.children if child.Name == name]
     def _update_children(self):
@@ -91,6 +97,8 @@ class _GuiObject(_GuiBase):
     def _resized(self,event=None):
         self.place()
     def place(self):
+        if self.Parent is None:
+            return
         parent: mtk.Widget = self.Parent.tk
         parent.update()
         absolute_size_x = self.Size.scale_x*parent.winfo_width() + self.Size.offset_x
@@ -203,20 +211,12 @@ class TextButton(_GuiObject):
         if attributes is None:
             attributes = {}
 
-        self.Activated = mini_object()
-        self.Activated._connected = None
-        self.Activated.Connect = self._set_activated
+        self.Activated = _Event(tk=None)
 
-        tk = mtk.Button((parent.tk if parent is not None else None),command=self._command)
+        tk = mtk.Button((parent.tk if parent is not None else None),command=self.Activated._fired)
         super().__init__("TextLabel", parent, tk=tk, attributes=attributes)
 
         self.Text = attributes["Text"] if "Text" in attributes else "TextLabel"
-
-    def _set_activated(self, func):
-        self.Activated._connected = func
-    def _command(self):
-        if self.Activated._connected is not None:
-            self.Activated._connected()
     def __setattr__(self, key, value):
         if key == "Text":
             self.tk.config(text=value)
@@ -224,45 +224,3 @@ class TextButton(_GuiObject):
             super().__setattr__(key, value)
         object.__setattr__(self, key, value)
 
-# -- TEST --
-if __name__ == '__main__':
-
-    def mouse_enter(label_to_change: _GuiObject, event):
-        label_to_change.BackgroundColor3 = Color3(rgb=(0, 0, 255))
-
-    def mouse_leave(label_to_change: _GuiObject, event):
-        label_to_change.BackgroundColor3 = Color3(rgb=(255, 0, 0))
-
-    def button_pressed(label_to_change: TextButton):
-        label_to_change.Text = "Pressed"
-
-    # Create a Window
-    red_color = Color3().fromRGB(255,0,0)
-    screenUI = ScreenGui()
-    screenUI.Name = "New Amazing App"
-    screenUI.BackgroundColor3 = red_color
-    # Position the Window at the middle of the screen
-    screenUI.Position = UDim2(scale=(0,0))
-    screenUI.AnchorPoint = Vector2(0,0)
-    # # Window's Initial Size takes up the entire screen
-    screenUI.Size = UDim2(scale=(0.5,0.5))
-
-    # Create a Label
-    frame = Frame(screenUI)
-    # Position the Label at middle of the Window
-    frame.AnchorPoint = Vector2(0.5, 0.5)
-    frame.Position = UDim2().from_scale_only(0.5, 0.5)
-
-    frame.Size = UDim2(scale=(0.45, 0.45))
-
-    frame.BackgroundColor3 = Color3(rgb=(100, 100, 0))
-
-    frame.BorderSizePixel = 1
-    frame.MouseEnter.Connect(lambda event: mouse_enter(frame, event))
-    frame.MouseLeave.Connect(lambda event: mouse_leave(frame, event))
-
-    label = TextButton(frame)
-    label.Position = UDim2().from_scale_only(0,0)
-    label.Size = UDim2(scale=(0.25,0.25))
-    label.AnchorPoint = Vector2(0,0)
-    label.Activated.Connect(lambda: button_pressed(label))

@@ -2,7 +2,8 @@ import colorsys
 
 # -- VALUE TYPES --
 class Color3:
-    def __init__(self, rgb: tuple = None, hsv: tuple = None, hex_: str = None):
+    def __init__(self, r=0, g=0, b=0, rgb: tuple = None, hsv: tuple = None, hex_: str = None):
+        self.rgb = (255*r, 255*g, 255*b)
         if rgb is not None:
             self.rgb = rgb
         if hsv is not None:
@@ -20,24 +21,34 @@ class Color3:
         return self
     def __setattr__(self, key, value: tuple):
         if key == 'rgb':
-            hsv = colorsys.rgb_to_hsv(value[0], value[1], value[2])
+            rgb_gen = (int(v/255) for v in value)
+            rgb_1 = tuple(rgb_gen)
+            hsv = colorsys.rgb_to_hsv(rgb_1[0], rgb_1[1], rgb_1[2])
             _hex = "#%02x%02x%02x" % value
             super().__setattr__('rgb',value)
             super().__setattr__('hsv',hsv)
             super().__setattr__('_hex',_hex)
         elif key == 'hsv':
             rgb = colorsys.hsv_to_rgb(value[0], value[1], value[2])
-            _hex = "#%02x%02x%02x" % value
-            super().__setattr__('rgb', rgb)
+            rgb_gen =(int(v*255) for v in rgb)
+            rgb_255 = tuple(rgb_gen)
+            _hex = "#%02x%02x%02x" % rgb_255
+            super().__setattr__('rgb', rgb_255)
             super().__setattr__('hsv', value)
             super().__setattr__('_hex', _hex)
         elif key == '_hex':
             value: str
+            value = value.lstrip("#")
+            if len(value) == 3:
+                value = ''.join([c * 2 for c in value])
+
             rgb = (int(value[0:2], 16), int(value[2:4], 16), int(value[4:6], 16))
-            hsv = colorsys.rgb_to_hsv(rgb[0], rgb[1], rgb[2])
+            rgb_gen = (int(v / 255) for v in rgb)
+            rgb_1 = tuple(rgb_gen)
+            hsv = colorsys.rgb_to_hsv(rgb_1[0], rgb_1[1], rgb_1[2])
             super().__setattr__('rgb', rgb)
             super().__setattr__('hsv', hsv)
-            super().__setattr__('_hex', value)
+            super().__setattr__('_hex', "#"+value)
     def __str__(self):
         return self._hex
 

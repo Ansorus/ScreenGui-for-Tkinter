@@ -1,10 +1,9 @@
 import time
-from tkinter import TclError
 
 from mttkinter import mtTkinter as mtk
 import threading
 from data_types import *
-from _tkinter import TclError
+import copy
 
 # -- BASE -- #
 class _Event:
@@ -70,39 +69,38 @@ class _GuiBase:
 
 class _GuiObject(_GuiBase):
     __frozen = True
-    def __init__(self, name, parent=None, attributes = None,
+    def __init__(self, name, parent=None, attributes=None,
                  position: UDim2 = UDim2((0,0)), size: UDim2 = UDim2((200,200)), anchor: Vector2 = Vector2(0,0),
                  bg:Color3=Color3(rgb=(255,255,255)),
-                 border_width=0,border_color=Color3(rgb=(0,0,0)),
+                 border_width=0, border_color=Color3(rgb=(0,0,0)),
                  tk = None, screen=False):
         super().__init__(name, parent, attributes, tk=tk, screen=screen)
 
-        self.BackgroundColor3 = bg
+        # if attributes is None:
+        #     attributes = {}
+        if attributes is None or attributes == {}:
+            self.BackgroundColor3 = bg
 
-        self.AnchorPoint = anchor
-        self.Position = position
-        self.Size = size
+            self.AnchorPoint = anchor
+            self.Position = position
+            self.Size = size
 
-        self.AbsolutePosition: tuple = self.AbsolutePosition
-        self.AbsoluteSize: tuple = self.AbsoluteSize
+            self.AbsolutePosition: tuple = self.AbsolutePosition
+            self.AbsoluteSize: tuple = self.AbsoluteSize
 
-        self.MouseEnter = _Event(self.tk, "<Enter>")
-        self.MouseLeave = _Event(self.tk, "<Leave>")
-        self.MouseMoved = _Event(self.tk, "<Motion>")
+            self.MouseEnter = _Event(self.tk, "<Enter>")
+            self.MouseLeave = _Event(self.tk, "<Leave>")
+            self.MouseMoved = _Event(self.tk, "<Motion>")
 
-        self.tk.bind("<Configure>", self._resized)
-        self.BorderColor3 = border_color
-        self.BorderSizePixel = border_width
-
-        if attributes is None:
-            attributes = {}
-
-        for attribute in attributes.keys():
-            if attribute != "Parent":
-                if attribute.endswith("frozen"):
-                    continue
-                self.__setattr__(attribute, attributes[attribute])
-
+            self.tk.bind("<Configure>", self._resized)
+            self.BorderColor3 = border_color
+            self.BorderSizePixel = border_width
+        else:
+            for attribute in attributes.keys():
+                if attribute != "Parent":
+                    if attribute.endswith("frozen"):
+                        continue
+                    self.__setattr__(attribute, attributes[attribute])
 
         self.__frozen = False
         self.place()
@@ -130,6 +128,7 @@ class _GuiObject(_GuiBase):
             object.__setattr__(self, key, value)
             self.place()
         elif key == "BackgroundColor3":
+            value: Color3
             object.__setattr__(self, "BackgroundColor3", value)
             self.tk.config(bg=str(value))
         elif key in ["BorderSizePixel", "BorderColor3"]:
@@ -189,7 +188,7 @@ class ScreenGui(_GuiObject):
     def _set_parent(self, parent):
         raise AttributeError
 
-# -- INSTANCES --
+# -- INSTANCES -- #
 class Frame(_GuiObject):
     def __init__(self, parent = None, attributes=None):
         if attributes is None:
@@ -286,7 +285,7 @@ class TextBox(_GuiObject):
         if attributes is None:
             attributes = {}
         self.__multi_frozen = True
-        self.MultiLine = multiline
+        self.MultiLine = attributes["MultiLine"] if "MultiLine" in attributes else multiline
 
         if self.MultiLine:
             tk = mtk.Text(parent.tk if parent is not None else None)
@@ -306,8 +305,6 @@ class TextBox(_GuiObject):
             if not self.MultiLine:
                 return self.tk.get()
             else:
-                print("ttt")
-                print(self.tk.get("1.0", "end-1c"))
                 return self.tk.get("1.0", "end-1c")
 
         else:
@@ -337,12 +334,11 @@ class TextBox(_GuiObject):
         elif key == "MultiLine" and not self.__multi_frozen:
             try:
                 object.__setattr__(self, key, value)
+                self.tk.destroy()
                 if self.MultiLine:
                     self.tk = mtk.Text(self.Parent.tk if self.Parent is not None else None)
                 else:
-                    print("oh yeah it's an entry")
                     self.tk = mtk.Entry(self.Parent.tk if self.Parent is not None else None)
-                print("sup" + str(self.tk))
                 everything = self.__dict__
                 for attribute in everything.keys():
                     if attribute in ["MultiLine", "Parent"]:
@@ -354,3 +350,4 @@ class TextBox(_GuiObject):
         elif key != "MultiLine":
             super().__setattr__(key, value)
         object.__setattr__(self,key,value)
+

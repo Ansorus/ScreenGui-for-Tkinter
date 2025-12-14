@@ -34,3 +34,6 @@ text_box.MultiLine = True
 time.sleep(3)
 
 print("Text: " + text_box.Text)
+
+new = ScreenGui()
+text_box.Parent = new

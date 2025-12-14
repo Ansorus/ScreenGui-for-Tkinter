@@ -16,8 +16,8 @@ def button_pressed():
 
 button.Activated.Connect(button_pressed)
 
-button.BorderSizePixel = 5
-button.BorderColor3 = Color3().fromRGB(255,255,0) # Yellow color
+button.BorderSizePixel = 1
+button.BorderColor3 = Color3().fromRGB(50,0,0) # Yellow color
 button.BackgroundColor3 = Color3(rgb=(255,0,0))
 
 button.TextSize = 20

@@ -1,7 +1,10 @@
 import time
+from tkinter import TclError
+
 from mttkinter import mtTkinter as mtk
 import threading
 from data_types import *
+from _tkinter import TclError
 
 # -- BASE -- #
 class _Event:
@@ -119,7 +122,6 @@ class _GuiObject(_GuiBase):
         elif key == "BackgroundColor3":
             object.__setattr__(self, "BackgroundColor3", value)
             self.tk.config(bg=str(value))
-            self.tk.config(activebackground=str(value))
         elif key in ["BorderSizePixel", "BorderColor3"]:
             object.__setattr__(self, key, value)
             self.tk.config(highlightbackground=str(self.BorderColor3), highlightthickness=self.BorderSizePixel)
@@ -229,16 +231,20 @@ class TextButton(_GuiObject):
 
         self.Activated = _Event(tk=None)
 
-        tk = mtk.Button((parent.tk if parent is not None else None),command=self.Activated._fired)
-        super().__init__("TextLabel", parent, tk=tk, attributes=attributes)
+        tk = mtk.Frame(parent.tk if parent is not None else None)
+        super().__init__("TextButton", parent, tk=tk, attributes=attributes)
 
-        self.Text = attributes["Text"] if "Text" in attributes else "TextLabel"
+        self._button_tk = mtk.Button((self.tk if self is not None else None),command=self.Activated._fired)
+        self._button_tk.place(relx=0, rely=0, relwidth=1, relheight=1, anchor="nw")
+
+        self.Text = attributes["Text"] if "Text" in attributes else "TextButton"
         self.Font: Font = attributes["Font"] if "Font" in attributes else Font(Enum.FontFamily.Arial, Enum.FontStyle.Normal)
         self.TextSize = attributes["TextSize"] if "TextSize" in attributes else 11
 
+        #self._button_tk.config(bg=str(self.BackgroundColor3), activebackground=str(self.BackgroundColor3))
     def __setattr__(self, key, value):
         if key == "Text":
-            self.tk.config(text=value)
+            self._button_tk.config(text=value)
         elif key in ["Font", "TextSize"]:
             object.__setattr__(self, key, value)
 
@@ -249,11 +255,14 @@ class TextButton(_GuiObject):
                 return
 
             styles_str = "".join(style + " " for style in self.Font.styles)
-            print(styles_str)
             font = (self.Font.family, self.TextSize, styles_str)
-            self.tk.config(font=font)
+            self._button_tk.config(font=font)
             return
-        elif key != "Activated":
+        elif key == "BackgroundColor3":
+            super().__setattr__(key, value)
+            if '_button_tk' in self.__dict__:
+                self._button_tk.config(bg=str(value), activebackground=str(value))
+        elif not key in ["Activated", "_button_tk"]:
             super().__setattr__(key, value)
         object.__setattr__(self, key, value)
 

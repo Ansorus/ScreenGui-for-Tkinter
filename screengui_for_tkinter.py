@@ -2,7 +2,7 @@ from types import SimpleNamespace as mini_object
 import time
 from mttkinter import mtTkinter as mtk
 import threading
-from value_types import Vector2, UDim2, Color3
+from data_types import Vector2, UDim2, Color3
 
 # -- BASE -- #
 class _Event:

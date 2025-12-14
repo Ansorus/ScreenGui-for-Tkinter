@@ -19,3 +19,6 @@ button.Activated.Connect(button_pressed)
 button.BorderSizePixel = 5
 button.BorderColor3 = Color3().fromRGB(255,255,0) # Yellow color
 button.BackgroundColor3 = Color3(rgb=(255,0,0))
+
+button.TextSize = 20
+button.Font = Font(Enum.FontFamily.Times, Enum.FontStyle.Overstrike)

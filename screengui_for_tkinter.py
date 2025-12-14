@@ -1,8 +1,7 @@
-from types import SimpleNamespace as mini_object
 import time
 from mttkinter import mtTkinter as mtk
 import threading
-from data_types import Vector2, UDim2, Color3
+from data_types import *
 
 # -- BASE -- #
 class _Event:
@@ -199,10 +198,26 @@ class TextLabel(_GuiObject):
         super().__init__("TextLabel", parent, tk=tk, attributes=attributes)
 
         self.Text = attributes["Text"] if "Text" in attributes else "TextLabel"
+        self.Font: Font = attributes["Font"] if "Font" in attributes else Font(Enum.FontFamily.Arial, Enum.FontStyle.Normal)
+        self.TextSize = attributes["TextSize"] if "TextSize" in attributes else 11
 
     def __setattr__(self, key, value):
         if key == "Text":
             self.tk.config(text=value)
+        elif key in ["Font", "TextSize"]:
+            object.__setattr__(self, key, value)
+
+            try:
+                super().__getattribute__("Font")
+                super().__getattribute__("TextSize")
+            except AttributeError:
+                return
+
+            styles_str = "".join(style + " " for style in self.Font.styles)
+            print(styles_str)
+            font = (self.Font.family, self.TextSize, styles_str)
+            self.tk.config(font=font)
+            return
         else:
             super().__setattr__(key, value)
         object.__setattr__(self,key,value)
@@ -218,9 +233,26 @@ class TextButton(_GuiObject):
         super().__init__("TextLabel", parent, tk=tk, attributes=attributes)
 
         self.Text = attributes["Text"] if "Text" in attributes else "TextLabel"
+        self.Font: Font = attributes["Font"] if "Font" in attributes else Font(Enum.FontFamily.Arial, Enum.FontStyle.Normal)
+        self.TextSize = attributes["TextSize"] if "TextSize" in attributes else 11
+
     def __setattr__(self, key, value):
         if key == "Text":
             self.tk.config(text=value)
+        elif key in ["Font", "TextSize"]:
+            object.__setattr__(self, key, value)
+
+            try:
+                super().__getattribute__("Font")
+                super().__getattribute__("TextSize")
+            except AttributeError:
+                return
+
+            styles_str = "".join(style + " " for style in self.Font.styles)
+            print(styles_str)
+            font = (self.Font.family, self.TextSize, styles_str)
+            self.tk.config(font=font)
+            return
         elif key != "Activated":
             super().__setattr__(key, value)
         object.__setattr__(self, key, value)

@@ -69,3 +69,28 @@ class Vector2:
     def __init__(self, x, y):
         self.x = x
         self.y = y
+
+class _BuiltInFontFamilies:
+    Arial = 'Arial'
+    Courier = 'Courier'
+    Times = 'Times'
+    Helvetica = 'Helvetica'
+
+class _BuiltInFontStyles:
+    Normal = 'normal'
+    Bold = 'bold'
+    Roman = 'roman'
+    Italic = 'italic'
+    Underline = 'underline'
+    Overstrike = 'overstrike'
+
+class Enum:
+    FontFamily = _BuiltInFontFamilies
+    FontStyle = _BuiltInFontStyles
+
+class Font:
+    def __init__(self, family, styles):
+        self.family = family # 'Arial'
+        self.styles = styles if isinstance(styles, tuple) else tuple([styles]) # Font.Bold
+
+

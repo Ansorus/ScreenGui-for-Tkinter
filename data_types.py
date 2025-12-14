@@ -2,13 +2,19 @@ import colorsys
 
 # -- VALUE TYPES --
 class Color3:
-    def __init__(self, rgb: tuple = None, hsv: tuple = None, _hex: str = None):
+    def __init__(self, rgb: tuple = None, hsv: tuple = None, hex_: str = None):
         if rgb is not None:
             self.rgb = rgb
         if hsv is not None:
             self.hsv = hsv
-        if _hex is not None:
-            self._hex = _hex
+        if hex_ is not None:
+            self._hex = hex_
+    def fromRGB(self, red, green, blue):
+        self.__init__(rgb=(red, green, blue))
+    def fromHSV(self, hue,saturation,value):
+        self.__init__(hsv=(hue,saturation,value))
+    def fromHex(self, hex_):
+        self.__init__(hex_=hex_)
     def __setattr__(self, key, value: tuple):
         if key == 'rgb':
             hsv = colorsys.rgb_to_hsv(value[0], value[1], value[2])

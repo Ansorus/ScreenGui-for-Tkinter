@@ -1,9 +1,6 @@
 from screengui_for_tkinter import *
 
 screen_gui = ScreenGui()
-# screen_gui.Position = UDim2(scale=(0.5,0.5))
-# screen_gui.Size = UDim2(scale=(0.25,0.25))
-# screen_gui.AnchorPoint = Vector2(0.5,0.5)
 
 button = TextButton(screen_gui)
 button.Text = "Hello World!"
@@ -22,3 +19,18 @@ button.BackgroundColor3 = Color3(rgb=(255,0,0))
 
 button.TextSize = 20
 button.Font = Font(Enum.FontFamily.Times, Enum.FontStyle.Overstrike)
+
+button.TextColor3 = Color3().fromRGB(255,255,255)
+
+text_box = TextBox(screen_gui)
+text_box.Position = UDim2(scale=(1,0))
+text_box.AnchorPoint = Vector2(1,0)
+
+text_box.BackgroundColor3 = Color3().fromRGB(100,0,0)
+text_box.TextColor3 = Color3().fromRGB(255,0,0)
+
+text_box.MultiLine = True
+
+time.sleep(3)
+
+print("Text: " + text_box.Text)

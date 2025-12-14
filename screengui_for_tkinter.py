@@ -65,7 +65,7 @@ class _GuiBase:
             return
         elif not key in self.__dict__.keys():
             print("Error found! Key: " + key)
-            raise AttributeError
+            raise
         super().__setattr__(key, value)
 
 class _GuiObject(_GuiBase):
@@ -93,6 +93,16 @@ class _GuiObject(_GuiBase):
         self.tk.bind("<Configure>", self._resized)
         self.BorderColor3 = border_color
         self.BorderSizePixel = border_width
+
+        if attributes is None:
+            attributes = {}
+
+        for attribute in attributes.keys():
+            if attribute != "Parent":
+                if attribute.endswith("frozen"):
+                    continue
+                self.__setattr__(attribute, attributes[attribute])
+
 
         self.__frozen = False
         self.place()
@@ -200,12 +210,15 @@ class TextLabel(_GuiObject):
         super().__init__("TextLabel", parent, tk=tk, attributes=attributes)
 
         self.Text = attributes["Text"] if "Text" in attributes else "TextLabel"
+        self.TextColor3 = attributes["TextColor3"] if "TextColor3" in attributes else Color3(0,0,0)
         self.Font: Font = attributes["Font"] if "Font" in attributes else Font(Enum.FontFamily.Arial, Enum.FontStyle.Normal)
         self.TextSize = attributes["TextSize"] if "TextSize" in attributes else 11
 
     def __setattr__(self, key, value):
         if key == "Text":
             self.tk.config(text=value)
+        elif key == "TextColor3":
+            self.tk.config(fg=value)
         elif key in ["Font", "TextSize"]:
             object.__setattr__(self, key, value)
 
@@ -216,7 +229,6 @@ class TextLabel(_GuiObject):
                 return
 
             styles_str = "".join(style + " " for style in self.Font.styles)
-            print(styles_str)
             font = (self.Font.family, self.TextSize, styles_str)
             self.tk.config(font=font)
             return
@@ -238,10 +250,10 @@ class TextButton(_GuiObject):
         self._button_tk.place(relx=0, rely=0, relwidth=1, relheight=1, anchor="nw")
 
         self.Text = attributes["Text"] if "Text" in attributes else "TextButton"
+        self.TextColor3 = attributes["TextColor3"] if "TextColor3" in attributes else Color3(0,0,0)
         self.Font: Font = attributes["Font"] if "Font" in attributes else Font(Enum.FontFamily.Arial, Enum.FontStyle.Normal)
         self.TextSize = attributes["TextSize"] if "TextSize" in attributes else 11
 
-        #self._button_tk.config(bg=str(self.BackgroundColor3), activebackground=str(self.BackgroundColor3))
     def __setattr__(self, key, value):
         if key == "Text":
             self._button_tk.config(text=value)
@@ -258,6 +270,8 @@ class TextButton(_GuiObject):
             font = (self.Font.family, self.TextSize, styles_str)
             self._button_tk.config(font=font)
             return
+        elif key == "TextColor3":
+            self._button_tk.config(fg=value, activeforeground=value)
         elif key == "BackgroundColor3":
             super().__setattr__(key, value)
             if '_button_tk' in self.__dict__:
@@ -266,3 +280,77 @@ class TextButton(_GuiObject):
             super().__setattr__(key, value)
         object.__setattr__(self, key, value)
 
+class TextBox(_GuiObject):
+    __multi_frozen = True
+    def __init__(self, parent = None, attributes=None, multiline= False):
+        if attributes is None:
+            attributes = {}
+        self.__multi_frozen = True
+        self.MultiLine = multiline
+
+        if self.MultiLine:
+            tk = mtk.Text(parent.tk if parent is not None else None)
+        else:
+            tk = mtk.Entry(parent.tk if parent is not None else None)
+
+        super().__init__("TextBox", parent, tk=tk, attributes=attributes)
+        self.__multi_frozen = False
+
+        self.Text = attributes["Text"] if "Text" in attributes else "TextBox"
+        self.TextColor3 = attributes["TextColor3"] if "TextColor3" in attributes else Color3(0,0,0)
+        self.Font: Font = attributes["Font"] if "Font" in attributes else Font(Enum.FontFamily.Arial, Enum.FontStyle.Normal)
+        self.TextSize = attributes["TextSize"] if "TextSize" in attributes else 11
+
+    def __getattribute__(self, item):
+        if item == "Text":
+            if not self.MultiLine:
+                return self.tk.get()
+            else:
+                print("ttt")
+                print(self.tk.get("1.0", "end-1c"))
+                return self.tk.get("1.0", "end-1c")
+
+        else:
+            return super().__getattr__(item)
+    def __setattr__(self, key, value):
+        if key == "Text":
+            if not self.MultiLine:
+                self.tk.config(text=value)
+            else:
+                self.tk.delete("1.0", mtk.END)
+                self.tk.insert("1.0", value)
+        elif key == "TextColor3":
+            self.tk.config(fg=value)
+        elif key in ["Font", "TextSize"]:
+            object.__setattr__(self, key, value)
+
+            try:
+                super().__getattribute__("Font")
+                super().__getattribute__("TextSize")
+            except AttributeError:
+                return
+
+            styles_str = "".join(style + " " for style in self.Font.styles)
+            font = (self.Font.family, self.TextSize, styles_str)
+            self.tk.config(font=font)
+            return
+        elif key == "MultiLine" and not self.__multi_frozen:
+            try:
+                object.__setattr__(self, key, value)
+                if self.MultiLine:
+                    self.tk = mtk.Text(self.Parent.tk if self.Parent is not None else None)
+                else:
+                    print("oh yeah it's an entry")
+                    self.tk = mtk.Entry(self.Parent.tk if self.Parent is not None else None)
+                print("sup" + str(self.tk))
+                everything = self.__dict__
+                for attribute in everything.keys():
+                    if attribute in ["MultiLine", "Parent"]:
+                        continue
+                    self.__setattr__(attribute, everything[attribute])
+                return
+            except AttributeError:
+                pass
+        elif key != "MultiLine":
+            super().__setattr__(key, value)
+        object.__setattr__(self,key,value)

@@ -120,6 +120,7 @@ class _GuiObject(_GuiBase):
         elif key == "BackgroundColor3":
             object.__setattr__(self, "BackgroundColor3", value)
             self.tk.config(bg=str(value))
+            self.tk.config(activebackground=str(value))
         elif key in ["BorderSizePixel", "BorderColor3"]:
             object.__setattr__(self, key, value)
             self.tk.config(highlightbackground=str(self.BorderColor3), highlightthickness=self.BorderSizePixel)

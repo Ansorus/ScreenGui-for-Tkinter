@@ -142,12 +142,13 @@ class ScreenGui(_GuiObject):
         while self.tk is None:
             time.sleep(0.1)
 
-        super().__init__("ScreenGui", screen=True,)
+        super().__init__("ScreenGui", screen=True)
 
         self.Name = "ScreenGui"
         self.BackgroundColor3 = Color3(rgb=(255,255,255))
         self.children = []
         self.__frozen = False
+        self.Size = UDim2(scale=(0.25, 0.25))
     def __setattr__(self, key, value):
         if self.__frozen:
             object.__setattr__(self, key, value)
@@ -242,7 +243,7 @@ if __name__ == '__main__':
     # Position the Window at the middle of the screen
     screenUI.Position = UDim2(scale=(0,0))
     screenUI.AnchorPoint = Vector2(0,0)
-    # Window's Initial Size takes up the entire screen
+    # # Window's Initial Size takes up the entire screen
     screenUI.Size = UDim2(scale=(0.5,0.5))
 
     # Create a Label

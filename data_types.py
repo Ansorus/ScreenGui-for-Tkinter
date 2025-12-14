@@ -11,10 +11,13 @@ class Color3:
             self._hex = hex_
     def fromRGB(self, red, green, blue):
         self.__init__(rgb=(red, green, blue))
+        return self
     def fromHSV(self, hue,saturation,value):
         self.__init__(hsv=(hue,saturation,value))
+        return self
     def fromHex(self, hex_):
         self.__init__(hex_=hex_)
+        return self
     def __setattr__(self, key, value: tuple):
         if key == 'rgb':
             hsv = colorsys.rgb_to_hsv(value[0], value[1], value[2])

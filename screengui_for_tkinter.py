@@ -237,9 +237,10 @@ if __name__ == '__main__':
         label_to_change.Text = "Pressed"
 
     # Create a Window
+    red_color = Color3().fromRGB(255,0,0)
     screenUI = ScreenGui()
     screenUI.Name = "New Amazing App"
-    screenUI.BackgroundColor3 = Color3(rgb=(255,0,255))
+    screenUI.BackgroundColor3 = red_color
     # Position the Window at the middle of the screen
     screenUI.Position = UDim2(scale=(0,0))
     screenUI.AnchorPoint = Vector2(0,0)

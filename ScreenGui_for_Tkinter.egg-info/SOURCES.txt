@@ -1,0 +1,11 @@
+README.md
+setup.py
+ScreenGui_for_Tkinter.egg-info/PKG-INFO
+ScreenGui_for_Tkinter.egg-info/SOURCES.txt
+ScreenGui_for_Tkinter.egg-info/dependency_links.txt
+ScreenGui_for_Tkinter.egg-info/requires.txt
+ScreenGui_for_Tkinter.egg-info/top_level.txt
+rtkinter/__init__.py
+rtkinter/data_types.py
+rtkinter/instances.py
+tests/test.py

@@ -2,8 +2,7 @@ import time
 
 from mttkinter import mtTkinter as mtk
 import threading
-from data_types import *
-import copy
+from rtkinter.data_types import *
 
 # -- BASE -- #
 class _Event:

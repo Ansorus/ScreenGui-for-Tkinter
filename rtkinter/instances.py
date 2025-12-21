@@ -30,24 +30,24 @@ class _Event:
 
 class _GuiBase:
     __frozen = True
-    def __init__(self, name: str = "GuiBase", parent = None, attributes=None, screen=False, tk = None):
-        if attributes is None:
-            attributes = {}
+    def __init__(self, tk, name: str = "GuiBase", parent = None, screen=False):
         self.Name: str = name
         if not screen:
             self.Parent: _GuiBase = parent
-            self.tk = tk
+            self.tk = tk(parent.tk if parent is not None else None)
+            self._class = tk
         self.children = []
-
-        for attribute in attributes.keys():
-            super().__setattr__(attribute, attributes[attribute])
 
         self.__frozen = False
     def _set_parent(self, parent):
         self.tk.destroy()
+        self.tk = self._class(parent.tk if parent is not None else None)
+        super().__setattr__("Parent", parent)
+
         everything = self.__dict__
-        self.__frozen = True
-        self.__init__(parent=parent,attributes=everything)
+        for key in everything.keys():
+            if not key in ["Parent"]:
+                self.__setattr__(key, everything[key])
     def FindFirstChild(self, name):
         return [child for child in self.children if child.Name == name]
     def _update_children(self):
@@ -68,39 +68,29 @@ class _GuiBase:
 
 class _GuiObject(_GuiBase):
     __frozen = True
-    def __init__(self, name, parent=None, attributes=None,
+    def __init__(self, tk, name, parent=None,
                  position: UDim2 = UDim2((0,0)), size: UDim2 = UDim2((200,200)), anchor: Vector2 = Vector2(0,0),
                  bg:Color3=Color3(rgb=(255,255,255)),
                  border_width=0, border_color=Color3(rgb=(0,0,0)),
-                 tk = None, screen=False):
-        super().__init__(name, parent, attributes, tk=tk, screen=screen)
+                 screen=False):
+        super().__init__(tk, name, parent, screen=screen)
 
-        # if attributes is None:
-        #     attributes = {}
-        if attributes is None or attributes == {}:
-            self.BackgroundColor3 = bg
+        self.BackgroundColor3 = bg
 
-            self.AnchorPoint = anchor
-            self.Position = position
-            self.Size = size
+        self.AnchorPoint = anchor
+        self.Position = position
+        self.Size = size
 
-            self.AbsolutePosition: tuple = self.AbsolutePosition
-            self.AbsoluteSize: tuple = self.AbsoluteSize
+        self.AbsolutePosition: tuple = self.AbsolutePosition
+        self.AbsoluteSize: tuple = self.AbsoluteSize
 
-            self.MouseEnter = _Event(self.tk, "<Enter>")
-            self.MouseLeave = _Event(self.tk, "<Leave>")
-            self.MouseMoved = _Event(self.tk, "<Motion>")
+        self.MouseEnter = _Event(self.tk, "<Enter>")
+        self.MouseLeave = _Event(self.tk, "<Leave>")
+        self.MouseMoved = _Event(self.tk, "<Motion>")
 
-            self.tk.bind("<Configure>", self._resized)
-            self.BorderColor3 = border_color
-            self.BorderSizePixel = border_width
-        else:
-            for attribute in attributes.keys():
-                if attribute != "Parent":
-                    if attribute.endswith("frozen"):
-                        continue
-                    self.__setattr__(attribute, attributes[attribute])
-
+        self.tk.bind("<Configure>", self._resized)
+        self.BorderColor3 = border_color
+        self.BorderSizePixel = border_width
         self.__frozen = False
         self.place()
     def _resized(self,event=None):
@@ -160,7 +150,7 @@ class ScreenGui(_GuiObject):
         while self.tk is None:
             time.sleep(0.1)
 
-        super().__init__("ScreenGui", screen=True)
+        super().__init__(None,"ScreenGui", screen=True)
 
         self.Name = "ScreenGui"
         self.BackgroundColor3 = Color3(rgb=(255,255,255))
@@ -189,28 +179,19 @@ class ScreenGui(_GuiObject):
 
 # -- INSTANCES -- #
 class Frame(_GuiObject):
-    def __init__(self, parent = None, attributes=None):
-        if attributes is None:
-            attributes = {}
-
-        tk = mtk.Frame(parent.tk if parent is not None else None)
-        super().__init__("Frame", parent, tk=tk, attributes=attributes)
-
+    def __init__(self, parent = None):
+        super().__init__(mtk.Frame,"Frame", parent)
     def __setattr__(self, key, value):
         super().__setattr__(key, value)
 
 class TextLabel(_GuiObject):
-    def __init__(self, parent = None, attributes=None):
-        if attributes is None:
-            attributes = {}
+    def __init__(self, parent = None):
+        super().__init__(mtk.Label,"TextLabel", parent)
 
-        tk = mtk.Label(parent.tk if parent is not None else None)
-        super().__init__("TextLabel", parent, tk=tk, attributes=attributes)
-
-        self.Text = attributes["Text"] if "Text" in attributes else "TextLabel"
-        self.TextColor3 = attributes["TextColor3"] if "TextColor3" in attributes else Color3(0,0,0)
-        self.Font: Font = attributes["Font"] if "Font" in attributes else Font(Enum.FontFamily.Arial, Enum.FontStyle.Normal)
-        self.TextSize = attributes["TextSize"] if "TextSize" in attributes else 11
+        self.Text = "TextLabel"
+        self.TextColor3 = Color3(0,0,0)
+        self.Font: Font = Font(Enum.FontFamily.Arial, Enum.FontStyle.Normal)
+        self.TextSize = 11
 
     def __setattr__(self, key, value):
         if key == "Text":
@@ -235,22 +216,19 @@ class TextLabel(_GuiObject):
         object.__setattr__(self,key,value)
 
 class TextButton(_GuiObject):
-    def __init__(self, parent = None, attributes=None):
-        if attributes is None:
-            attributes = {}
+    def __init__(self, parent = None):
 
         self.Activated = _Event(tk=None)
 
-        tk = mtk.Frame(parent.tk if parent is not None else None)
-        super().__init__("TextButton", parent, tk=tk, attributes=attributes)
+        super().__init__(mtk.Frame,"TextButton", parent)
 
         self._button_tk = mtk.Button((self.tk if self is not None else None),command=self.Activated._fired)
         self._button_tk.place(relx=0, rely=0, relwidth=1, relheight=1, anchor="nw")
 
-        self.Text = attributes["Text"] if "Text" in attributes else "TextButton"
-        self.TextColor3 = attributes["TextColor3"] if "TextColor3" in attributes else Color3(0,0,0)
-        self.Font: Font = attributes["Font"] if "Font" in attributes else Font(Enum.FontFamily.Arial, Enum.FontStyle.Normal)
-        self.TextSize = attributes["TextSize"] if "TextSize" in attributes else 11
+        self.Text = "TextButton"
+        self.TextColor3 = Color3(0,0,0)
+        self.Font: Font = Font(Enum.FontFamily.Arial, Enum.FontStyle.Normal)
+        self.TextSize = 11
 
     def __setattr__(self, key, value):
         if key == "Text":
@@ -280,24 +258,17 @@ class TextButton(_GuiObject):
 
 class TextBox(_GuiObject):
     __multi_frozen = True
-    def __init__(self, parent = None, attributes=None, multiline= False):
-        if attributes is None:
-            attributes = {}
+    def __init__(self, parent = None, multiline= False):
         self.__multi_frozen = True
-        self.MultiLine = attributes["MultiLine"] if "MultiLine" in attributes else multiline
+        self.MultiLine = multiline
 
-        if self.MultiLine:
-            tk = mtk.Text(parent.tk if parent is not None else None)
-        else:
-            tk = mtk.Entry(parent.tk if parent is not None else None)
-
-        super().__init__("TextBox", parent, tk=tk, attributes=attributes)
+        super().__init__((mtk.Text if self.MultiLine else mtk.Entry),"TextBox", parent)
         self.__multi_frozen = False
 
-        self.Text = attributes["Text"] if "Text" in attributes else "TextBox"
-        self.TextColor3 = attributes["TextColor3"] if "TextColor3" in attributes else Color3(0,0,0)
-        self.Font: Font = attributes["Font"] if "Font" in attributes else Font(Enum.FontFamily.Arial, Enum.FontStyle.Normal)
-        self.TextSize = attributes["TextSize"] if "TextSize" in attributes else 11
+        self.Text = "TextBox"
+        self.TextColor3 = Color3(0,0,0)
+        self.Font: Font = Font(Enum.FontFamily.Arial, Enum.FontStyle.Normal)
+        self.TextSize = 11
 
     def __getattribute__(self, item):
         if item == "Text":

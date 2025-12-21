@@ -110,5 +110,20 @@ def button_pressed():
 
 button.Activated.Connect(button_pressed)
 ```
-Other UI Objects do NOT have an Activated Event. However, all UI Objects have these 3 Events: `MouseEnter`, `MouseMoved`, `MouseLeave`
+Other UI Objects do NOT have an `Activated Event`. However, all UI Objects have these 3 Events: `MouseEnter`, `MouseMoved`, `MouseLeave`
 
+## Making a TextBox
+TextBoxes are TextLabels that the user can write in. Textboxes can be multiple lines, or just one line
+```
+text_box = TextBox(screen_gui)
+text_box.Text = "Initial Text"  # text_box.Text will be changed by the user
+text_box.MultiLine = True  # If user presses 'enter', they can make a new line
+```
+### Changing the Font
+All Text Objects (TextLabels, TextButtons, TextBoxes) have fonts and text sizes. To set the TextSize is as simple as follows:
+```text_box.TextSize = 20```
+To set the font of the text, you have to make a Font object with the font family, and any weights (normal, bold, italic):
+```
+font = Font('Arial', 'bold','italic') # First argument is the family
+button.Font = font
+```

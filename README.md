@@ -4,8 +4,8 @@
 ## What's a ScreenGui?
 In Roblox Studio, UI objects can be placed relative to the screen's size with offset pixels. Moreover, UI objects have anchor points that can be positioned anywhere around the object.
 Ofcourse, Tkinter has the same abilities. Tkinter can place widgets with `x`,`y`,`relx`,`rely`, and anchor points are set with a combination of `n`,`e`,`s`,`w`
-The issue is, for Roblox Studio developers switching to python, switching to tkinter is challenging. In fact, many people recommend to use `grid` in tkinter, which places objects based on grids.
-This means that new-comers of python have to get used to the `grid` way of positioning and sizing widgets, which is takes time for Roblox Studio developers who are using to make UI Objects differently.
+The issue is, for Roblox Studio developers switching to python, switching to tkinter is challenging. People are recommended to use `grid` in tkinter, which places objects based on grids.
+This means that new-comers have to get used to the `grid` way of positioning and sizing widgets, which takes time for Roblox Studio developers who are used to making UI Objects differently.
 To solve this problem, this library simulates the Roblox Studio way of creating UI in Tkinter. In this repository, a ScreenGui is a window that can have UI Objects such as TextLabels, TextButtons, and Frames.
 This library is for Roblox Studio Developers who want to make UI in TKinter the same way they make UI in Roblox Studio.
 
@@ -110,7 +110,7 @@ def button_pressed():
 
 button.Activated.Connect(button_pressed)
 ```
-Other UI Objects do NOT have an `Activated Event`. However, all UI Objects have these 3 Events: `MouseEnter`, `MouseMoved`, `MouseLeave`
+Other UI Objects do NOT have an `Activated` Event. However, all UI Objects have these 3 Events: `MouseEnter`, `MouseMoved`, `MouseLeave`
 
 ## Making a TextBox
 TextBoxes are TextLabels that the user can write in. Textboxes can be multiple lines, or just one line
@@ -121,7 +121,9 @@ text_box.MultiLine = True  # If user presses 'enter', they can make a new line
 ```
 ### Changing the Font
 All Text Objects (TextLabels, TextButtons, TextBoxes) have fonts and text sizes. To set the TextSize is as simple as follows:
-```text_box.TextSize = 20```
+```
+text_box.TextSize = 20
+```
 To set the font of the text, you have to make a Font object with the font family, and any weights (normal, bold, italic):
 ```
 font = Font('Arial', 'bold','italic') # First argument is the family

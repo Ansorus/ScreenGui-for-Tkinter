@@ -10,7 +10,7 @@ To solve this problem, this library simulates the Roblox Studio way of creating 
 This library is for Roblox Studio Developers who want to make UI in TKinter the same way they make UI in Roblox Studio.
 
 # Guide:
-After downloading the repository files and mtTkinter, import them onto your python code to start using it
+After importing this package as well as mtTkinter, import them onto your python code to start using it
 
 ## Making a ScreenGui
 To make a ScreenGui, it simply the following code below:\

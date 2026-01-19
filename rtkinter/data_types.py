@@ -10,15 +10,21 @@ class Color3:
             self.hsv = hsv
         if hex_ is not None:
             self._hex = hex_
-    def fromRGB(self, red, green, blue):
-        self.__init__(rgb=(red, green, blue))
-        return self
-    def fromHSV(self, hue,saturation,value):
-        self.__init__(hsv=(hue,saturation,value))
-        return self
-    def fromHex(self, hex_):
-        self.__init__(hex_=hex_)
-        return self
+    @classmethod
+    def new(cls, r,g,b): # CHANGE LATER TO MATCH STUDIo
+        return cls(r=r,g=g,b=b)
+
+    @classmethod
+    def fromRGB(cls, red, green, blue):
+        return cls(rgb=(red, green, blue))
+
+    @classmethod
+    def fromHSV(cls, hue,saturation,value):
+        return cls(hsv=(hue,saturation,value))
+
+    @classmethod
+    def fromHex(cls, hex_):
+        return cls(hex_=hex_)
     def __setattr__(self, key, value: tuple):
         if key == 'rgb':
             rgb_gen = (int(v/255) for v in value)
@@ -58,12 +64,18 @@ class UDim2:
         self.offset_y = offset[1]
         self.scale_x = scale[0]
         self.scale_y = scale[1]
-    def from_scale_only(self, x,y):
-        self.__init__(scale=(x,y))
-        return self
-    def from_offset_only(self, x, y):
-        self.__init__(offset=(x,y))
-        return self
+
+    @classmethod
+    def new(cls, scale_x, offset_x, scale_y, offset_y): #CHANGE LATER TO MATCH STUDIO
+        return cls(offset = (offset_x,offset_y), scale = (scale_x,scale_y))
+
+    @classmethod
+    def fromScale(cls, x,y):
+        return cls(scale=(x,y))
+
+    @classmethod
+    def fromOffset(cls, x, y):
+        return cls(offset=(x,y))
 
 class Vector2:
     def __init__(self, x, y):
@@ -84,9 +96,21 @@ class _BuiltInFontStyles:
     Underline = 'underline'
     Overstrike = 'overstrike'
 
+class _TextXAlignments:
+    Left = 'left'
+    Right = 'right'
+    Center = 'center'
+
+class _TextYAlignments:
+    Top = 'top'
+    Bottom = 'bottom'
+    Center = 'center'
+
 class Enum:
     FontFamily = _BuiltInFontFamilies
     FontStyle = _BuiltInFontStyles
+    TextXAlignment = _TextXAlignments
+    TextYAlignment = _TextYAlignments
 
 class Font:
     def __init__(self, family, styles):

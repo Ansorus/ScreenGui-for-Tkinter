@@ -29,31 +29,60 @@ class _Event:
             self.connected(event)
 
 # -- Objects that don't have a direct appearance (But still affect other things) -- #
+next_id = 0
 class _GuiBase:
     __frozen = True
     def __init__(self, name: str = "GuiBase", parent = None):
         self.Name: str = name
-        self.Parent: _GuiBase = parent
 
-        self.children = []
+        self._children = {}
+
+        global next_id
+        self._child_id = next_id
+        next_id += 1
+
+        if parent is not None:
+            self.Parent: _GuiBase = parent
+            self._set_parent(parent)
 
         self.__frozen = False
-    def _set_parent(self, parent):
+    def _shallow_set_parent(self, parent: _GuiBase):
+        # Remove Old Parent
+        if (self.Parent is not None) and self.Name in self.Parent._children:
+            children: dict = self.Parent._children[self.Name]
+            if self._child_id in children:
+                children.pop(self._child_id)
+
+        # Set parent
+        if parent is not None:
+            if self.Name in parent._children:
+                parent._children[self.Name][self._child_id] = self
+            else:
+                parent._children[self.Name] = {self._child_id: self}
         super().__setattr__("Parent", parent)
+    def _set_parent(self, parent: _GuiBase):
+        self._shallow_set_parent(parent)
 
         everything = self.__dict__
         for key in everything.keys():
             if not key in ["Parent"]:
                 self.__setattr__(key, everything[key])
     def FindFirstChild(self, name):
-        for child in self.children:
-            if child.Name == name:
-                return child
-        return None
-
-    def _update_children(self):
-        for child in self.children:
-            child.Parent = self
+        try:
+            names: dict = self._children[name]
+            for name in names.keys():
+                return names[name] # Just return the first one lol
+        except KeyError:
+            return None
+    def __getattribute__(self, item):
+        try:
+            return super().__getattribute__(item)
+        except AttributeError:
+            if self.FindFirstChild(item):
+                return self.FindFirstChild(item)
+            else:
+                #print("Error found! '" + item + "' Does not exist")
+                raise AttributeError
     def __setattr__(self, key, value):
         if self.__frozen:
             super().__setattr__(key, value)
@@ -62,6 +91,11 @@ class _GuiBase:
         if key == "Parent":
             self._set_parent(value)
             return
+        elif key == "Name":
+            parent = self.Parent
+            self._shallow_set_parent(None)
+            object.__setattr__(self, "Name", value)
+            self._shallow_set_parent(parent)
         elif not key in self.__dict__.keys():
             print("Error found! Key: " + key)
             raise
@@ -153,7 +187,7 @@ class _GuiObject(_GuiBase):
         else:
             super().__setattr__(key, value)
             return
-    def __getattr__(self, item):
+    def __getattribute__(self, item):
         if item == "AbsolutePosition":
             return self.capsule.winfo_x(), self.capsule.winfo_y()
         elif item == "AbsoluteSize":
@@ -178,8 +212,9 @@ class _TextObject(_GuiObject):
         self.TextYAlignment = 'top' # Top, Center, Bottom
     def _resized(self,event=None):
         super()._resized()
-        if hasattr(self, "TextScaled") and self.TextScaled:
-            self._update_text_size()
+        if hasattr(self, "TextScaled"):
+            if self.TextScaled:
+                self._update_text_size()
     def _update_text_size(self):
         border_width, border_height = self.AbsoluteSize
         # Insert me getting font here (with 1 PT size!):
